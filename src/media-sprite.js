@@ -15,6 +15,8 @@ function MediaSprite (options) {
 
   this.timeUpdateHandler = this._handleTimeUpdate.bind(this)
   this.metaDataLoadedHandler = this._handleMetaDataLoaded.bind(this)
+
+  this._init()
 }
 
 MediaSprite.prototype._init = function () {
@@ -24,7 +26,7 @@ MediaSprite.prototype._init = function () {
 
 MediaSprite.prototype._attachEvents = function () {
   this.media.addEventListener('loadedmetadata', this.metaDataLoadedHandler)
-  this.media.addEventListener('timeupdate', this.timeUpdateHandler)
+  // this.media.addEventListener('timeupdate', this.timeUpdateHandler)
 }
 
 MediaSprite.prototype._createMedia = function () {
@@ -43,18 +45,19 @@ MediaSprite.prototype._createMedia = function () {
     media = el
   }
 
+  media.autoplay = false
   this.media = media
 }
 
 MediaSprite.prototype._handleTimeUpdate = function () {
   if (this.media.currentTime >= this.currentSpriteRange()[1]) {
+    this._handleSpriteEnd()
+
     if (this.repeatMode) {
       this.play(this.currentSpriteKey)
     } else {
       this.pause()
     }
-
-    this._handleSpriteEnd()
   }
 }
 
@@ -63,11 +66,19 @@ MediaSprite.prototype._handleMetaDataLoaded = function () {
 }
 
 MediaSprite.prototype._handleSpriteEnd = function () {
+  this.media.removeEventListener('timeupdate', this.timeUpdateHandler)
   this.options.onSpriteEnd && this.options.onSpriteEnd()
 }
 
 MediaSprite.prototype.currentSpriteRange = function () {
   return this.sprites[this.currentSpriteKey]
+}
+
+MediaSprite.prototype._play = function (spriteKey) {
+  this.currentSpriteKey = spriteKey
+  this.media.currentTime = this.currentSpriteRange()[0]
+  this.media.addEventListener('timeupdate', this.timeUpdateHandler)
+  this.media.play()
 }
 
 MediaSprite.prototype.play = function (spriteKey) {
@@ -77,9 +88,7 @@ MediaSprite.prototype.play = function (spriteKey) {
   }
 
   this.repeatMode = false
-  this.currentSpriteKey = spriteKey
-  this.media.currentTime = this.currentSpriteRange()[0]
-  this.media.play()
+  this._play(spriteKey)
 }
 
 MediaSprite.prototype.repeat = function (spriteKey) {
@@ -89,7 +98,7 @@ MediaSprite.prototype.repeat = function (spriteKey) {
   }
 
   this.repeatMode = true
-  this.play(spriteKey)
+  this._play(spriteKey)
 }
 
 MediaSprite.prototype.pause = function () {
