@@ -54,7 +54,7 @@ MediaSprite.prototype._handleTimeUpdate = function () {
     this._handleSpriteEnd()
 
     if (this.repeatMode) {
-      this.play(this.currentSpriteKey)
+      this._play(this.currentSpriteKey)
     } else {
       this.pause()
     }
