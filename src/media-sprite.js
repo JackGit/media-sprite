@@ -13,7 +13,7 @@ function MediaSprite (options) {
   this.currentSpriteKey = 0
   this.repeatMode = false
 
-  this.timeUpdateHandler = this._handleTimeUpdate.bind(this)
+  this.timeUpdateHandler = this._handvarimeUpdate.bind(this)
   this.metaDataLoadedHandler = this._handleMetaDataLoaded.bind(this)
 
   this._init()
@@ -21,17 +21,12 @@ function MediaSprite (options) {
 
 MediaSprite.prototype._init = function () {
   this._createMedia()
-  this._attachEvents()
-}
-
-MediaSprite.prototype._attachEvents = function () {
-  this.media.addEventListener('loadedmetadata', this.metaDataLoadedHandler)
-  // this.media.addEventListener('timeupdate', this.timeUpdateHandler)
 }
 
 MediaSprite.prototype._createMedia = function () {
-  let media = this.options.media
-  let mediaType = this.options.mediaType
+  var media = this.options.media
+  var mediaType = this.options.mediaType
+  var mediaElement = null
 
   if (typeof media === 'object') {
     // about HTMLMediaElement readyState: https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/readyState
@@ -39,17 +34,18 @@ MediaSprite.prototype._createMedia = function () {
       this._handleMetaDataLoaded()
     }
   } else {
-    let el = document.createElement(mediaType)
-    el.src = media
-    el.preload = 'metadata'
-    media = el
+    mediaElement = document.createElement(mediaType)
+    mediaElement.preload = 'metadata'
+    mediaElement.addEventListener('loadedmetadata', this.metaDataLoadedHandler)
+    mediaElement.src = media
+    media = mediaElement
   }
 
   media.autoplay = false
   this.media = media
 }
 
-MediaSprite.prototype._handleTimeUpdate = function () {
+MediaSprite.prototype._handvarimeUpdate = function () {
   if (this.media.currentTime >= this.currentSpriteRange()[1]) {
     this._handleSpriteEnd()
 
@@ -70,15 +66,22 @@ MediaSprite.prototype._handleSpriteEnd = function () {
   this.options.onSpriteEnd && this.options.onSpriteEnd()
 }
 
-MediaSprite.prototype.currentSpriteRange = function () {
-  return this.sprites[this.currentSpriteKey]
-}
-
 MediaSprite.prototype._play = function (spriteKey) {
+  var range = this.currentSpriteRange()
+
+  if (!range) {
+    console.error('MediaSprite error: invalid sprite key', spriteKey)
+    return
+  }
+
   this.currentSpriteKey = spriteKey
-  this.media.currentTime = this.currentSpriteRange()[0]
+  this.media.currentTime = range[0]
   this.media.addEventListener('timeupdate', this.timeUpdateHandler)
   this.media.play()
+}
+
+MediaSprite.prototype.currentSpriteRange = function () {
+  return this.sprites[this.currentSpriteKey]
 }
 
 MediaSprite.prototype.play = function (spriteKey) {
@@ -103,10 +106,6 @@ MediaSprite.prototype.repeat = function (spriteKey) {
 
 MediaSprite.prototype.pause = function () {
   this.media.pause()
-}
-
-MediaSprite.prototype.stop = function () {
-  this.media.stop()
 }
 
 module.exports = MediaSprite
