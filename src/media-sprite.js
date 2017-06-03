@@ -82,15 +82,7 @@
   }
 
   MediaSprite.prototype._play = function (spriteKey) {
-    var range = this.spriteRange(spriteKey)
-
-    if (!range) {
-      console.error('MediaSprite error: invalid sprite key', spriteKey)
-      return
-    }
-
-    this.currentSpriteKey = spriteKey
-    this.media.currentTime = range[0]
+    this.set(spriteKey)
     this.media.addEventListener('timeupdate', this.timeUpdateHandler)
     this.media.play()
   }
@@ -121,6 +113,18 @@
 
   MediaSprite.prototype.pause = function () {
     this.media.pause()
+  }
+
+  MediaSprite.prototype.set = function (spriteKey) {
+    var range = this.spriteRange(spriteKey)
+
+    if (!range) {
+      console.error('MediaSprite error: invalid sprite key', spriteKey)
+      return
+    }
+
+    this.currentSpriteKey = spriteKey
+    this.media.currentTime = range[0]
   }
 
   return MediaSprite
