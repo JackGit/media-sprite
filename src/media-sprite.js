@@ -78,7 +78,7 @@
 
   MediaSprite.prototype._handleSpriteEnd = function () {
     this.media.removeEventListener('timeupdate', this.timeUpdateHandler)
-    this.options.onSpriteEnd && this.options.onSpriteEnd()
+    setTimeout(function () { this.options.onSpriteEnd && this.options.onSpriteEnd() }.bind(this), 0)
   }
 
   MediaSprite.prototype._play = function (spriteKey) {
